@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tool Management Software (TMS)</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #18bc9c;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #34495e;
+        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { background-color: #f8f9fa; color: var(--dark); display: flex; flex-direction: column; min-height: 100vh; }
+        
+        /* Login Screen */
+        #login-screen { background: linear-gradient(135deg, var(--primary), var(--dark)); display: flex; align-items: center; justify-content: center; position: fixed; top:0; left:0; width:100%; height:100%; z-index: 1000; }
+        .login-box { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 100%; max-width: 400px; }
+        .login-box h2 { margin-bottom: 24px; text-align: center; color: var(--primary); }
+        
+        /* Main Layout */
+        header { background-color: var(--primary); color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .logout-btn { background: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+        
+        /* Navigation Tabs */
+        nav { background-color: var(--dark); display: flex; padding: 0 20px; }
+        .tab-btn { background: none; border: none; color: #a6b0b9; padding: 15px 20px; font-size: 16px; cursor: pointer; transition: 0.2s; border-bottom: 3px solid transparent; }
+        .tab-btn:hover { color: white; }
+        .tab-btn.active { color: white; border-bottom-color: var(--secondary); font-weight: bold; }
+        
+        /* Sub Navigation */
+        .sub-nav { background: #e2e7ec; padding: 10px 25px; display: flex; gap: 10px; border-bottom: 1px solid #ccd1d9; }
+        .sub-btn { background: white; border: 1px solid #ccd1d9; padding: 6px 15px; border-radius: 20px; cursor: pointer; font-size: 14px; }
+        .sub-btn.active { background: var(--secondary); color: white; border-color: var(--secondary); }
+
+        /* Container & Panels */
+        .container { padding: 25px; flex: 1; max-width: 1400px; width: 100%; margin: 0 auto; }
+        .view-panel { display: none; }
+        .view-panel.active { display: block; }
+        .sub-view-panel { display: none; }
+        .sub-view-panel.active { display: block; }
+        
+        /* UI Components */
+        .card { background: white; padding: 20px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .card h3 { margin-bottom: 20px; color: var(--primary); border-bottom: 2px solid var(--light); padding-bottom: 10px; }
+        
+        /* Forms */
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-size: 14px; font-weight: 600; color: #555; }
+        input, select, textarea { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; width: 100%; }
+        input:focus, select:focus { border-color: var(--secondary); outline: none; }
+        .btn { background-color: var(--secondary); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px; display: inline-block; }
+        .btn:hover { opacity: 0.9; }
+        
+        /* Tables */
+        .table-responsive { overflow-x: auto; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #e0e0e0; }
+        th { background-color: #f4f6f7; color: var(--primary); font-weight: 600; }
+        tr:hover { background-color: #fcfcfc; }
+        
+        /* Status Elements */
+        .badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+        .badge-danger { background-color: #fadbd8; color: #c0392b; }
+        .badge-success { background-color: #d4efdf; color: #27ae60; }
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN PANEL -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h2>TMS System Login</h2>
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>User ID</label>
+                <input type="text" id="username" placeholder="Type admin or production">
+            </div>
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Type password">
+            </div>
+            <button class="btn" style="width:100%;" onclick="handleLogin()">Sign In</button>
+            <p style="color:var(--danger); font-size:13px; text-align:center; margin-top:10px; display:none;" id="login-error">Invalid access setup! Use admin/admin or prod/prod</p>
+        </div>
+    </div>
+
+    <!-- MAIN APP SCREEN -->
+    <header>
+        <h2>Tool Management Platform</h2>
+        <div class="user-info">
+            <span id="display-user-role" style="font-weight: 600;">Role: Admin</span>
+            <button class="logout-btn" onclick="handleLogout()">Logout</button>
+        </div>
+    </header>
+
+    <nav id="main-nav">
+        <button class="tab-btn active" id="nav-masters" onclick="switchTab('masters')">Masters</button>
+        <button class="tab-btn" id="nav-transactions" onclick="switchTab('transactions')">Transaction</button>
+        <button class="tab-btn" id="nav-reports" onclick="switchTab('reports')">Report</button>
+    </nav>
+
+    <!-- Sub Bars -->
+    <div id="sub-nav-masters" class="sub-nav">
+        <button class="sub-btn active" onclick="switchSubTab('masters', 'part-master')">Part Master</button>
+        <button class="sub-btn" onclick="switchSubTab('masters', 'supplier-master')">Supplier Master</button>
+        <button class="sub-btn" onclick="switchSubTab('masters', 'work-centre')">Work Centre</button>
+        <button class="sub-btn" onclick="switchSubTab('masters', 'location-master')">Location Master</button>
+    </div>
+
+    <div id="sub-nav-transactions" class="sub-nav" style="display:none;">
+        <button class="sub-btn active" id="sub-nav-inward" onclick="switchSubTab('transactions', 'material-inward')">Material Inward</button>
+        <button class="sub-btn" id="sub-nav-outward" onclick="switchSubTab('transactions', 'material-outward')">Material Outward</button>
+    </div>
+
+    <div class="container">
+        <!-- MASTERS VIEW PANEL -->
+        <div id="view-masters" class="view-panel active">
+            <div id="sub-view-part-master" class="sub-view-panel active">
+                <div class="card">
+                    <h3>Register New Tool Part</h3>
+                    <form onsubmit="savePart(event)">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Part Name</label><input type="text" id="part-name" required></div>
+                            <div class="form-group"><label>Part Number</label><input type="text" id="part-number" required></div>
+                            <div class="form-grid" style="grid-column: span 2; padding:0; margin:0;">
+                                <div class="form-group"><label>Min Qty</label><input type="number" id="part-min" required></div>
+                                <div class="form-group"><label>Max Qty</label><input type="number" id="part-max" required></div>
+                                <div class="form-group"><label>ROL</label><input type="number" id="part-rol" required></div>
+                                <div class="form-group"><label>Safety Stock</label><input type="number" id="part-safety" required></div>
+                            </div>
+                            <div class="form-group"><label>Lead Time (Days)</label><input type="number" id="part-lead" required></div>
+                        </div>
+                        <button type="submit" class="btn">Add to Registry</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h3>Part Master Records</h3>
+                    <div class="table-responsive"><table><thead><tr><th>Part Name</th><th>Part Number</th><th>Min</th><th>Max</th><th>ROL</th><th>Safety Stock</th><th>Lead Time</th></tr></thead><tbody id="table-parts"></tbody></table></div>
+                </div>
+            </div>
+
+            <div id="sub-view-supplier-master" class="sub-view-panel">
+                <div class="card">
+                    <h3>Register New Supplier</h3>
+                    <form onsubmit="saveSupplier(event)">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Supplier Name</label><input type="text" id="sup-name" required></div>
+                            <div class="form-group"><label>Contact Name</label><input type="text" id="sup-contact" required></div>
+                            <div class="form-group"><label>Contact No</label><input type="text" id="sup-phone" required></div>
+                            <div class="form-group"><label>Email</label><input type="email" id="sup-email" required></div>
+                            <div class="form-group"><label>Address</label><input type="text" id="sup-address" required></div>
+                        </div>
+                        <button type="submit" class="btn">Add Supplier</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h3>Supplier List</h3>
